@@ -100,6 +100,21 @@ namespace BankTest {
         }
 
         [TestMethod]
+        public void GetAccountsForCustomer_HasAccount_Test() {
+            // arrange
+            Bank bank = new Bank();
+            Person customer = new Person("scrooge");
+            int expectedAccounts = 1;
+
+            // act
+            Account account = bank.CreateAccount(customer, new Money(1000));
+            Account[] myAccounts = bank.GetAccountsForCustomer(customer);
+
+            // assert
+            Assert.IsTrue(expectedAccounts == myAccounts.Length);
+        }
+
+        [TestMethod]
         public void GetAccountsForCustomerFail_Test() {
             // arrange
             Bank bank = new Bank();
