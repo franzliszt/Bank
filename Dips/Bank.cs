@@ -38,7 +38,8 @@ namespace Dips {
         public Account[] GetAccountsForCustomer(Person customer) {
             if (customer == null)
                 throw new ArgumentNullException("customer", NotAValidCustomer);
-
+            var foundCustomer = accounts.FirstOrDefault(c => c.owner.name == customer.name);
+            if (foundCustomer == null) return null;
             
             List<Account> myAccounts = new List<Account>();
             foreach (var account in accounts) {
@@ -52,7 +53,7 @@ namespace Dips {
             if (amount.amount < 0)
                 throw new ArgumentOutOfRangeException("amount", amount.amount, AmountIsLessThanZero);
             if (to == null)
-                throw new ArgumentNullException("account do not exist");
+                throw new ArgumentNullException(NotAValidCustomer);
             
             to.currentAmount += amount.amount;
             Console.WriteLine("Current amount for " + to.accountName + " is now: " + to.currentAmount + ".");

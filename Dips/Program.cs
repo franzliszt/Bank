@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace Dips {
     class Program {
         static void Main(string[] args) {
+            Console.WriteLine("Programmet er skrevet av Stian Reistad Røgeberg.\n");
             Bank bank = new Bank();
             Person customer = new Person("donald");
             Console.WriteLine(customer.name + " is opening an account.\n");
@@ -33,7 +34,7 @@ namespace Dips {
             // Customers accounts.
             Console.WriteLine("**** Here is customer " + customer.name + " accounts: ****\n");
             Account[] myAccounts = bank.GetAccountsForCustomer(customer);
-            if (myAccounts.Length > 0) {
+            if (myAccounts.Length > 0 && myAccounts != null) {
                 foreach (Account account in myAccounts) {
                     Console.WriteLine("Account name " + account.accountName + ", current amount is " + account.currentAmount +
                         " and owner is " + account.owner.name);
@@ -64,6 +65,11 @@ namespace Dips {
             } catch (ArgumentNullException e) {
                 Console.WriteLine(Bank.NotAValidCustomer);
             }
+
+            Person customer2 = new Person("dolly");
+            Account dollyAccount = bank.CreateAccount(customer2, new Money(300000));
+            Console.WriteLine("\n" + dollyAccount.owner.name + " has opened an account.\nAccount name is " +
+                dollyAccount.accountName + " and has initial deposit " + dollyAccount.currentAmount + ".");
 
             Console.ReadKey();
         }

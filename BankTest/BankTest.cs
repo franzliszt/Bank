@@ -65,39 +65,38 @@ namespace BankTest {
             Account account4 = bank.CreateAccount(customer, new Money(4000));
 
             string expectedName = "donald";
-            double expectedAmount1 = 1000;
             string expectedAccountName1 = account1.accountName;
-            
-            double expectedAmount2 = 2000;
             string expectedAccountName2 = account2.accountName;
-            
-            double expectedAmount3 = 3000;
             string expectedAccountName3 = account3.accountName;
-            
-            double expectedAmount4 = 4000;
             string expectedAccountName4 = account4.accountName;
 
+            Account[] expectedArray = new Account[4];
+            expectedArray[0] = account1;
+            expectedArray[1] = account2;
+            expectedArray[2] = account3;
+            expectedArray[3] = account4;
+
             // act
-            Account[] accounts = bank.GetAccountsForCustomer(customer);
+            Account[] actualArray = bank.GetAccountsForCustomer(customer);
 
             //assert
-            Assert.IsTrue(accounts.Length == 4);
+            Assert.IsTrue(actualArray.Length == 4);
 
-            Assert.AreEqual(expectedName, accounts[0].owner.name);
-            Assert.IsTrue(expectedAmount1 == accounts[0].currentAmount);
-            Assert.AreEqual(expectedAccountName1, accounts[0].accountName);
+            Assert.AreEqual(expectedName, actualArray[0].owner.name);
+            Assert.IsTrue(expectedArray[0].currentAmount == actualArray[0].currentAmount);
+            Assert.AreEqual(expectedArray[0].accountName, actualArray[0].accountName);
 
-            Assert.AreEqual(expectedName, accounts[1].owner.name);
-            Assert.IsTrue(expectedAmount2 == accounts[1].currentAmount);
-            Assert.AreEqual(expectedAccountName2, accounts[1].accountName);
+            Assert.AreEqual(expectedName, actualArray[1].owner.name);
+            Assert.IsTrue(expectedArray[1].currentAmount == actualArray[1].currentAmount);
+            Assert.AreEqual(expectedArray[1].accountName, actualArray[1].accountName);
 
-            Assert.AreEqual(expectedName, accounts[02].owner.name);
-            Assert.IsTrue(expectedAmount3 == accounts[2].currentAmount);
-            Assert.AreEqual(expectedAccountName3, accounts[2].accountName);
+            Assert.AreEqual(expectedName, actualArray[02].owner.name);
+            Assert.IsTrue(expectedArray[2].currentAmount == actualArray[2].currentAmount);
+            Assert.AreEqual(expectedArray[2].accountName, actualArray[2].accountName);
 
-            Assert.AreEqual(expectedName, accounts[3].owner.name);
-            Assert.IsTrue(expectedAmount4 == accounts[3].currentAmount);
-            Assert.AreEqual(expectedAccountName4, accounts[3].accountName);
+            Assert.AreEqual(expectedName, actualArray[3].owner.name);
+            Assert.IsTrue(expectedArray[3].currentAmount == actualArray[3].currentAmount);
+            Assert.AreEqual(expectedArray[3].accountName, actualArray[3].accountName);
         }
 
         [TestMethod]
@@ -111,18 +110,12 @@ namespace BankTest {
             bank.CreateAccount(customer, new Money(1000));
 
             Person dolly = new Person("dolly");
-            string expectedName = dolly.name;
-            int expectedLength = 0;
 
             // act
             Account[] accounts = bank.GetAccountsForCustomer(dolly);
 
             //assert
-            foreach (Account account in accounts) {
-                Assert.IsNull(account);
-                Assert.AreNotEqual(expectedName, account.owner.name);
-            }
-            Assert.IsTrue(expectedLength == accounts.Length);
+            Assert.IsNull(accounts);
         }
 
         [TestMethod]
