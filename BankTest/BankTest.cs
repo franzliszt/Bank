@@ -11,6 +11,8 @@ namespace BankTest {
             Bank bank = new Bank();
             Person customer = new Person("dolly");
             string expectedName = "dolly";
+            string expectedAccountName = "dolly1";
+            double expectedAmount = 100;
             double amount = 100;
 
             // act
@@ -19,10 +21,12 @@ namespace BankTest {
             // assert
             Assert.IsNotNull(account);
             Assert.AreEqual(expectedName, account.owner.name);
+            Assert.AreEqual(expectedAccountName, account.accountName);
+            Assert.AreEqual(expectedAmount, account.currentAmount);
         }
 
         [TestMethod]
-        public void CreateAccount_InitialAmountIsLessThanZero_Test() {
+        public void CreateAccount_InitialAmountIsLessThanStartAmount_Test() {
             // arrange
             Bank bank = new Bank();
             Person customer = new Person("dolly");
@@ -33,7 +37,7 @@ namespace BankTest {
                 bank.CreateAccount(customer, new Money(initialDeposit));
             } catch (ArgumentOutOfRangeException e) {
                 // assert
-                StringAssert.Contains(e.Message, Bank.AmountIsLessThanZero);
+                StringAssert.Contains(e.Message, Bank.NotValidAmount);
             }
         }
 
@@ -125,12 +129,13 @@ namespace BankTest {
             bank.CreateAccount(customer, new Money(1000));
 
             Person dolly = new Person("dolly");
+            int expectedValue = 0;
 
             // act
             Account[] accounts = bank.GetAccountsForCustomer(dolly);
 
             //assert
-            Assert.IsNull(accounts);
+            Assert.IsTrue(expectedValue == accounts.Length);
         }
 
         [TestMethod]
@@ -190,15 +195,13 @@ namespace BankTest {
         [TestMethod]
         public void Withdraw_WhenAmountIsMoreThanBalance_Test() {
             // arrange
-            double startBalance = 11;
-            double amount = 200;
             Bank bank = new Bank();
-            Person customer = new Person("donald");
-            Account account = bank.CreateAccount(customer, new Money(startBalance));
+            Person customer = new Person("dolly");
+            Account account = bank.CreateAccount(customer, new Money(1000));
 
             // act
             try {
-                bank.Withdraw(account, new Money(amount));
+                bank.Withdraw(account, new Money(1001));
             } catch (ArgumentOutOfRangeException e) {
                 StringAssert.Contains(e.Message, Bank.AmountIsMoreThanBalance);
             }
@@ -207,51 +210,29 @@ namespace BankTest {
         [TestMethod]
         public void Withdraw_WhenAmountIsLessThanZero_Test() {
             // arrange
-            double startBalance = 11;
-            double amount = -1;
             Bank bank = new Bank();
-            Person customer = new Person("donald");
-            Account account = bank.CreateAccount(customer, new Money(startBalance));
+            Person customer = new Person("dolly");
+            Account account = bank.CreateAccount(customer, new Money(1000));
 
             // act
             try {
-                bank.Withdraw(account, new Money(amount));
+                bank.Withdraw(account, new Money(49));
             } catch (ArgumentOutOfRangeException e) {
-                StringAssert.Contains(e.Message, Bank.AmountIsMoreThanBalance);
+                StringAssert.Contains(e.Message, Bank.NotValidAmount);
             }
-        }
-
-        [TestMethod]
-        public void WithdrawOK_Test() {
-            // arrange
-            Bank bank = new Bank();
-            Person customer = new Person("donald");
-            double expectedValue1 = 1000;
-            double expectedValue2 = 500;
-
-            // act
-            Account account1 = bank.CreateAccount(customer, new Money(2000));
-            Account account2 = bank.CreateAccount(customer, new Money(2000));
-            bank.Withdraw(account1, new Money(1000));
-            bank.Withdraw(account2, new Money(1500));
-
-            // assert
-            Assert.AreEqual(expectedValue1, account1.currentAmount);
-            Assert.AreEqual(expectedValue2, account2.currentAmount);
         }
 
         [TestMethod]
         public void Transfer_WhenAmountIsMoreThanBalance_Test() {
             // arrange
-            double startBalance = 11;
-            double amount = 200;
             Bank bank = new Bank();
-            Person customer = new Person("donald");
-            Account account = bank.CreateAccount(customer, new Money(startBalance));
+            Person customer = new Person("dolly");
+            Account from = bank.CreateAccount(customer, new Money(1000));
+            Account to = bank.CreateAccount(customer, new Money(2000));
 
             // act
             try {
-                bank.Withdraw(account, new Money(amount));
+                bank.Transfer(from, to, new Money(1500));
             } catch (ArgumentOutOfRangeException e) {
                 StringAssert.Contains(e.Message, Bank.AmountIsMoreThanBalance);
             }
@@ -260,36 +241,33 @@ namespace BankTest {
         [TestMethod]
         public void Transfer_WhenAmountIsLessThanZero_Test() {
             // arrange
-            double startBalance = 2000;
-            double amount = -0.5;
             Bank bank = new Bank();
-            Person customer = new Person("donald");
-            Account account = bank.CreateAccount(customer, new Money(startBalance));
+            Person customer = new Person("dolly");
+            Account from = bank.CreateAccount(customer, new Money(1000));
+            Account to = bank.CreateAccount(customer, new Money(2000));
 
             // act
             try {
-                bank.Withdraw(account, new Money(amount));
+                bank.Transfer(from, to, new Money(-1));
             } catch (ArgumentOutOfRangeException e) {
-                // assert
-                StringAssert.Contains(e.Message, Bank.AmountIsMoreThanBalance);
+                StringAssert.Contains(e.Message, Bank.NotValidAmount);
             }
         }
 
         [TestMethod]
-        public void TransferOK_Test() {
+        public void Transfer_NotValidAccount_Test() {
             // arrange
             Bank bank = new Bank();
-            Person customer = new Person("donald");
-            Account account1 = bank.CreateAccount(customer, new Money(10));
-            Account account2 = bank.CreateAccount(customer, new Money(20));
-            double expectedResult = 25;
+            Person customer = new Person("dolly");
+            Account from = null;
+            Account to = bank.CreateAccount(customer, new Money(2000));
 
             // act
-            bank.Transfer(account1, account2, new Money(5));
-            double actualResult = account2.currentAmount;
-
-            // assert
-            Assert.AreEqual(expectedResult, actualResult);
+            try {
+                bank.Transfer(from, to, new Money(100));
+            } catch (ArgumentNullException e) {
+                StringAssert.Contains(e.Message, Bank.NotAValidAccount);
+            }
         }
     }
 }

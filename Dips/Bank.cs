@@ -7,51 +7,58 @@ using System.Threading.Tasks;
 namespace Dips {
     public class Bank {
         private static int accountNumber = 1;
-        private List<Account> accounts;
-        public const string AmountIsLessThanZero = "Amount is less than zero";
-        public const string AmountIsMoreThanBalance = "Amount is more than balance";
-        public const string NotAValidCustomer = "Not a valid customer";
+        private const double minimumAmount = 50;
+        private List<Account> accounts; // All the accounts in the bank.
+        // Error messages.
+        public const string NotValidAmount = "Not valid amount.";
+        public const string AmountIsMoreThanBalance = "Amount is more than balance.";
+        public const string NotAValidCustomer = "Not a valid customer.";
+        public const string NotAValidAccount = "Not a valid account.";
 
         public Bank() {
             accounts = new List<Account>();
         }
 
         public Account CreateAccount(Person customer, Money initialDeposit) {
-            if (initialDeposit.amount < 0)
-                throw new ArgumentOutOfRangeException("amount", AmountIsLessThanZero);
-
+            if (initialDeposit.amount < minimumAmount)
+                throw new ArgumentOutOfRangeException("amount", NotValidAmount);
             if (customer == null)
                 throw new ArgumentNullException("customer", NotAValidCustomer);
-            
+
+            List<Account> existingCustomer = accounts.Where(account => account.owner.name == customer.name).ToList();
+            if (existingCustomer.Count() > 0) {
+                accountNumber = existingCustomer.Count() + 1;
+                accounts.Add(new Account() {
+                    accountName = customer.name + accountNumber,
+                    currentAmount = initialDeposit.amount,
+                    owner = customer
+                });
+                return accounts.Last();
+            } else {
+                // New customer.
+                accountNumber = 1;
                 Account newAccount = new Account() {
                     accountName = customer.name + accountNumber,
                     owner = customer,
                     currentAmount = initialDeposit.amount
                 };
                 accounts.Add(newAccount);
-
-                // Increment for next account number
-                accountNumber++;
-                return newAccount;
+                return accounts.Last();
+            }
         }
 
         public Account[] GetAccountsForCustomer(Person customer) {
+            List<Account> myAccounts = new List<Account>();
             if (customer == null)
                 throw new ArgumentNullException("customer", NotAValidCustomer);
-            var foundCustomer = accounts.FirstOrDefault(c => c.owner.name == customer.name);
-            if (foundCustomer == null) return null;
-            
-            List<Account> myAccounts = new List<Account>();
-            foreach (var account in accounts) {
-                if (customer.name.Equals(account.owner.name))
-                    myAccounts.Add(account);
-            }
+
+            myAccounts = accounts.Where(owner => owner.owner.name == customer.name).ToList();
             return myAccounts.ToArray();
         }
 
         public void Deposit(Account to, Money amount) {
-            if (amount.amount < 0)
-                throw new ArgumentOutOfRangeException("amount", amount.amount, AmountIsLessThanZero);
+            if (amount.amount < minimumAmount)
+                throw new ArgumentOutOfRangeException("amount", amount.amount, NotValidAmount);
             if (to == null)
                 throw new ArgumentNullException(NotAValidCustomer);
             
@@ -61,26 +68,32 @@ namespace Dips {
         }
 
         public void Withdraw(Account from, Money amount) {
+            if (amount.amount <= 0)
+                throw new ArgumentOutOfRangeException("amount", NotValidAmount);
             if (amount.amount <= from.currentAmount) {
-                from.currentAmount -= amount.amount;
-                Console.WriteLine("After witdraw " + amount.amount + " from account name " + from.accountName + 
-                    ", current amount is " + from.currentAmount + ".");
-            }
+                    from.currentAmount -= amount.amount;
+                    Console.WriteLine("After witdraw " + amount.amount + " from account name " + from.accountName +
+                        ", current amount is " + from.currentAmount + ".");
+            } else {
+                throw new ArgumentOutOfRangeException("amount", AmountIsMoreThanBalance);
+            }        
         }
 
         public void Transfer(Account from, Account to, Money money) {
-            if (money.amount < 0)
-                throw new ArgumentOutOfRangeException("amount", money.amount, AmountIsLessThanZero);
+            if ((from == null) || (to == null))
+                throw new ArgumentNullException("account", NotAValidAccount);
             if (money.amount > from.currentAmount)
-                throw new ArgumentOutOfRangeException("amount", money.amount, AmountIsMoreThanBalance);
+                throw new ArgumentOutOfRangeException("amount", AmountIsMoreThanBalance);
+            if (money.amount <= 0)
+                throw new ArgumentOutOfRangeException("amount", NotValidAmount);
             
             from.currentAmount -= money.amount;
             to.currentAmount += money.amount;
 
-            Console.WriteLine("Transfered " + money.amount + " to account " + to.accountName + 
-                " from account " + from.accountName + ".\nCurrent amount is now " + from.currentAmount 
+            Console.WriteLine("Transfered " + money.amount + " to account " + to.accountName +
+                " from account " + from.accountName + ".\nCurrent amount is now " + from.currentAmount
                 + " and account " + to.accountName + " is now " + to.currentAmount + ".");
-        }
+         }
     }
 
 
